@@ -240,20 +240,25 @@ void comp(my_tree *tree)
         char ans1 = 0, ans2 = 0;
         tree_node *node1 = tree->root, *node2 = tree->root;
 
-        ans1 = stk_pop(&stk1);
-        ans2 = stk_pop(&stk2);
+        //ans1 = stk_pop(&stk1);
+        //ans2 = stk_pop(&stk2);
 
         printf("They both ");
-        while(ans1 == ans2)
+        while(stk1.size && stk2.size)
         {
-            if(ans1 == 'y' && node1)
+            ans1 = stk_pop(&stk1);
+            ans2 = stk_pop(&stk2);
+
+            if(ans1 != ans2) break;
+
+            if(ans1 == 'y')
             {
                 printf("%s, ", node1->val);
 
                 node1 = (tree_node*)node1->l_child;
                 node2 = (tree_node*)node2->l_child;
             }
-            else if(ans1 == 'n' && node1)
+            else if(ans1 == 'n')
             {
                 printf("not %s, ", node1->val);
 
@@ -261,17 +266,6 @@ void comp(my_tree *tree)
                 node2 = (tree_node*)node2->r_child;
             }
             else printf("ERROR: bad stack content\n");
-
-            if(!stk1.size || !stk2.size)
-            {
-                if(stk1.size) ans1 = stk_pop(&stk1);
-                if(stk2.size) ans2 = stk_pop(&stk2);
-
-                break;
-            }
-
-            ans1 = stk_pop(&stk1);
-            ans2 = stk_pop(&stk2);
         }
 
         putchar('\n');
@@ -283,43 +277,49 @@ void comp(my_tree *tree)
 
         do
         {
-            if(ans1 == 'y' && node1)
+            if(node1->l_child)
             {
-                printf("%s, ", node1->val);
+                if(ans1 == 'y')
+                {
+                    printf("%s, ", node1->val);
 
-                node1 = (tree_node*)node1->l_child;
+                    node1 = (tree_node*)node1->l_child;
+                }
+                else if(ans1 == 'n')
+                {
+                    printf("not %s, ", node1->val);
+
+                    node1 = (tree_node*)node1->r_child;
+                }
+                else printf("ERROR: bad stack content\n");
+
+                if(stk1.size) ans1 = stk_pop(&stk1);
             }
-            else if(ans1 == 'n' && node1)
-            {
-                printf("not %s, ", node1->val);
-
-                node1 = (tree_node*)node1->r_child;
-            }
-            else printf("ERROR: bad stack content\n");
-
-            if(stk1.size) ans1 = stk_pop(&stk1);
-        }while(stk1.size > -1);
+        }while(stk1.size);
 
         putchar('\n');
         printf("and %s ", target2);
         do
         {
-            if(ans2 == 'y' && node2)
+            if(node2->l_child)
             {
-                printf("%s, ", node2->val);
+                if(ans2 == 'y')
+                {
+                    printf("%s, ", node2->val);
 
-                node2 = (tree_node*)node2->l_child;
+                    node2 = (tree_node*)node2->l_child;
+                }
+                else if(ans2 == 'n')
+                {
+                    printf("not %s, ", node2->val);
+
+                    node2 = (tree_node*)node2->r_child;
+                }
+                else printf("ERROR: bad stack content\n");
+
+                if(stk2.size) ans1 = stk_pop(&stk2);
             }
-            else if(ans2 == 'n' && node2)
-            {
-                printf("not %s, ", node2->val);
-
-                node2 = (tree_node*)node2->r_child;
-            }
-            else printf("ERROR: bad stack content\n");
-
-            if(stk2.size) ans1 = stk_pop(&stk2);
-        }while(stk2.size > -1);
+        }while(stk2.size);
     }
 
     return;
