@@ -1,5 +1,19 @@
 #include "akinator.h"
 
+#define CLEAR_BUFFER while(getchar() != '\n');
+
+#define AKI_PRINT(...)                               \
+{printf(__VA_ARGS__);                                \
+if(should_speak)                                     \
+{                                                    \
+    char print_buffer[PRINT_BUFFER_SIZE + 1] = {0};  \
+    sprintf(print_buffer, __VA_ARGS__);              \
+                                                     \
+    aki_speak(print_buffer);                         \
+}}                                                   \
+
+int should_speak = 0;
+
 void start_game(const char *filename)
 {
     assert(filename);
@@ -8,9 +22,13 @@ void start_game(const char *filename)
 
     get_database(filename, &tree);
 
+    printf("Would you like to enable text-to-speech? y/n\n");
+    should_speak = (getchar() == 'y') ? 1:0;
+    CLEAR_BUFFER
+
     while(GAME_IS_ON)
     {
-        printf("What to do?\n"
+        AKI_PRINT("What to do?\n"
                 "%c. Try to guess your character\n"
                 "%c. Give definition\n"
                 "%c. Compare\n"
@@ -19,7 +37,10 @@ void start_game(const char *filename)
                 "%c. Exit without saving\n",
                 GAME_GUESS, GAME_DEF, GAME_COMP, GAME_SHOW, GAME_SAVE_AND_EXIT, GAME_EXIT);
 
-        switch(getchar())
+        int input = getchar();
+        CLEAR_BUFFER
+
+        switch(input)
         {
             case GAME_GUESS:
                 guess(&tree);
@@ -38,12 +59,9 @@ void start_game(const char *filename)
                 return;
             case GAME_EXIT:
                 return;
-                break;
             default:
-                printf("Please try again\n\n");
+                AKI_PRINT("Please try again\n\n");
         }
-
-        getchar(); //to clear buffer
     }
 
     return;
@@ -53,17 +71,18 @@ void guess(my_tree *tree)
 {
     assert(tree);
 
-    getchar(); //to clear buffer
-
-    printf("Type y for yes and n for no\n");
+    AKI_PRINT("Type y for yes and n for no\n");
 
     tree_node *node = tree->root;
 
     while(node->l_child && node->r_child)
     {
-        printf("%s?\n", node->val);
+        AKI_PRINT("%s?\n", node->val);
 
-        switch(getchar())
+        int input = getchar();
+        CLEAR_BUFFER;
+
+        switch(input)
         {
             case 'y':
                 node = (tree_node*)node->l_child;
@@ -72,24 +91,25 @@ void guess(my_tree *tree)
                 node = (tree_node*)node->r_child;
                 break;
             default:
-                printf("Please try again\n\n");
+                AKI_PRINT("Please try again\n\n");
         }
-
-        getchar(); //to clear buffer
     }
 
-    printf("Is it %s?\n", node->val);
+    AKI_PRINT("Is it %s?\n", node->val);
 
-    switch(getchar())
+    int input = getchar();
+    CLEAR_BUFFER;
+
+    switch(input)
     {
         case 'y':
-            printf("I won again\n");
+            AKI_PRINT("I won again\n");
             return;
         case 'n':
             update_database(tree, node);
             break;
         default:
-            printf("Please try again\n\n");
+            AKI_PRINT("Please try again\n\n");
     }
 
     return;
@@ -118,19 +138,17 @@ void update_database(my_tree *tree, tree_node *bad_node)
 {
     assert(tree);
 
-    getchar(); //to clear buffer
-
-    printf("Who was it then?\n");
+    AKI_PRINT("Who was it then?\n");
 
     char new_name[MAX_STR_LEN + 1] = {0};
     read(new_name);
 
-    printf("How is %s different from %s?\n", new_name, bad_node -> val);
+    AKI_PRINT("How is %s different from %s?\n", new_name, bad_node -> val);
 
     char new_question[MAX_STR_LEN + 1] = {0};
     read(new_question);
 
-    printf("So %s %s. You will not win next time!\n", new_name, new_question);
+    AKI_PRINT("So %s %s. You will not win next time!\n", new_name, new_question);
 
     tree_node *new_node = node_ctor(tree, bad_node->val);
     bad_node->r_child = new_node;
@@ -172,9 +190,7 @@ void def(my_tree *tree)
 {
     assert(tree);
 
-    getchar(); //to clear buffer
-
-    printf("Whose definition would you like to get?\n");
+    AKI_PRINT("Whose definition would you like to get?\n");
 
     char target[MAX_STR_LEN + 1] = {0};
     read(target);
@@ -184,7 +200,7 @@ void def(my_tree *tree)
 
     if(tree_find(tree->root, target, &stk))
     {
-        printf("%s ", target);
+        AKI_PRINT("%s ", target);
 
         tree_node *node = tree->root;
 
@@ -194,20 +210,20 @@ void def(my_tree *tree)
 
             if(ans == 'y')
             {
-                printf("%s, ", node->val);
+                AKI_PRINT("%s, ", node->val);
 
                 node = (tree_node*)node->l_child;
             }
             else if(ans == 'n')
             {
-                printf("not %s, ", node->val);
+                AKI_PRINT("not %s, ", node->val);
 
                 node = (tree_node*)node->r_child;
             }
-            else printf("ERROR: bad stack content\n");
+            else AKI_PRINT("ERROR: bad stack content\n");
         }
     }
-    else printf("%s was not found in database\n", target);
+    else AKI_PRINT("%s was not found in database\n", target);
 
     return;
 }
@@ -216,9 +232,7 @@ void comp(my_tree *tree)
 {
     assert(tree);
 
-    getchar();//to clear buffer
-
-    printf("Enter to objects to compare\n");
+    AKI_PRINT("Enter two objects to compare\n");
 
     char target1[MAX_STR_LEN + 1] = {0};
     read(target1);
@@ -232,18 +246,16 @@ void comp(my_tree *tree)
 
     char found1 = 0, found2 = 0;
 
-    if(!(found1 = tree_find(tree->root, target1, &stk1))) printf("%s not found in database\n", target1);
-    if(!(found2 = tree_find(tree->root, target2, &stk2))) printf("%s not found in database\n", target2);
+    if(!(found1 = tree_find(tree->root, target1, &stk1))) AKI_PRINT("%s not found in database\n", target1);
+    if(!(found2 = tree_find(tree->root, target2, &stk2))) AKI_PRINT("%s not found in database\n", target2);
+
 
     if(found1 && found2)
     {
         char ans1 = 0, ans2 = 0;
         tree_node *node1 = tree->root, *node2 = tree->root;
 
-        //ans1 = stk_pop(&stk1);
-        //ans2 = stk_pop(&stk2);
-
-        printf("They both ");
+        AKI_PRINT("They both ");
         while(stk1.size && stk2.size)
         {
             ans1 = stk_pop(&stk1);
@@ -253,27 +265,23 @@ void comp(my_tree *tree)
 
             if(ans1 == 'y')
             {
-                printf("%s, ", node1->val);
+                AKI_PRINT("%s, ", node1->val);
 
                 node1 = (tree_node*)node1->l_child;
                 node2 = (tree_node*)node2->l_child;
             }
             else if(ans1 == 'n')
             {
-                printf("not %s, ", node1->val);
+                AKI_PRINT("not %s, ", node1->val);
 
                 node1 = (tree_node*)node1->r_child;
                 node2 = (tree_node*)node2->r_child;
             }
-            else printf("ERROR: bad stack content\n");
+            else AKI_PRINT("ERROR: bad stack content\n");
         }
 
         putchar('\n');
-        printf("but %s ", target1);
-
-        //printf("stk1: %d stk2: %d\n", stk1.size, stk2.size);
-
-        //printf("stk1 size: %d", stk1.size);
+        AKI_PRINT("but %s ", target1);
 
         do
         {
@@ -281,41 +289,41 @@ void comp(my_tree *tree)
             {
                 if(ans1 == 'y')
                 {
-                    printf("%s, ", node1->val);
+                    AKI_PRINT("%s, ", node1->val);
 
                     node1 = (tree_node*)node1->l_child;
                 }
                 else if(ans1 == 'n')
                 {
-                    printf("not %s, ", node1->val);
+                    AKI_PRINT("not %s, ", node1->val);
 
                     node1 = (tree_node*)node1->r_child;
                 }
-                else printf("ERROR: bad stack content\n");
+                else AKI_PRINT("ERROR: bad stack content\n");
 
                 if(stk1.size) ans1 = stk_pop(&stk1);
             }
         }while(stk1.size);
 
         putchar('\n');
-        printf("and %s ", target2);
+        AKI_PRINT("and %s ", target2);
         do
         {
             if(node2->l_child)
             {
                 if(ans2 == 'y')
                 {
-                    printf("%s, ", node2->val);
+                    AKI_PRINT("%s, ", node2->val);
 
                     node2 = (tree_node*)node2->l_child;
                 }
                 else if(ans2 == 'n')
                 {
-                    printf("not %s, ", node2->val);
+                    AKI_PRINT("not %s, ", node2->val);
 
                     node2 = (tree_node*)node2->r_child;
                 }
-                else printf("ERROR: bad stack content\n");
+                else AKI_PRINT("ERROR: bad stack content\n");
 
                 if(stk2.size) ans1 = stk_pop(&stk2);
             }
@@ -324,3 +332,28 @@ void comp(my_tree *tree)
 
     return;
 }
+
+void aki_speak(const char *text)
+{
+    assert(text);
+
+    #ifdef SPEAK
+    char command[PRINT_BUFFER_SIZE + 1] = "espeak.exe \"";
+
+    strncat(command, text, MAX_STR_LEN*10);
+    strncat(command, "\"", MAX_STR_LEN*10);
+
+    int chr = 0;            //replace \n with space so that espeak could pronounce everything
+    while(command[chr])
+    {
+        if(command[chr] == '\n') command[chr] = ' ';
+        chr++;
+    }
+
+    system(command);
+    #endif
+
+    return;
+}
+
+#undef CLEAR_BUFFER

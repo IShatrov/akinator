@@ -4,7 +4,10 @@
 #include "tree.h"
 #include "simple_stack.h"
 
+#define SPEAK
+
 const int DEFAULT_TREE_CAP = 100;
+const int PRINT_BUFFER_SIZE = 1000;
 
 enum game_modes
 {
@@ -34,6 +37,8 @@ void def(my_tree *tree);
 
 void comp(my_tree *tree);
 
+void aki_speak(const char *text);
+
 //akinator_read.cpp
 
 void get_database(const char *filename, my_tree *tree);
@@ -50,7 +55,7 @@ char* read_text(FILE *stream);
 
 void parse_database(const char *text, my_tree *tree);
 
-char fill_buffer(const char **text, char *buffer);
+char fill_node(const char **text, char *buffer);
 
 void parse_node(const char **text, my_tree *tree, tree_node *node, char *buffer);
 

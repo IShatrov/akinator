@@ -1,5 +1,7 @@
 #include "akinator.h"
 
+#define ALLIGN(n_tabs) for(int i = 0; i < n_tabs; i++) fputc('\t', dest);
+
 void save_database(my_tree *tree)
 {
     assert(tree);
@@ -19,11 +21,11 @@ void save_node(tree_node *node, FILE *dest)
 
     static int allignment = 0;
 
-    for(int i = 0; i < allignment; i++) fputc('\t', dest);
+    ALLIGN(allignment);
     fputc('{', dest);
     fputc('\n', dest);
 
-    for(int i = 0; i < allignment; i++) fputc('\t', dest);
+    ALLIGN(allignment);
     fprintf(dest, " \"%s\" \n", node->val);
 
     allignment++;
@@ -33,7 +35,7 @@ void save_node(tree_node *node, FILE *dest)
 
     allignment--;
 
-    for(int i = 0; i < allignment; i++) fputc('\t', dest);
+    ALLIGN(allignment);
     fputc('}', dest);
     fputc('\n', dest);
 

@@ -59,14 +59,14 @@ void parse_database(const char *text, my_tree *tree)
 
     char buffer[MAX_STR_LEN + 1] = {0};
 
-    fill_buffer(&text, buffer);
+    fill_node(&text, buffer);
 
     tree_node *node = tree_ctor(tree, DEFAULT_TREE_CAP, buffer);
 
     parse_node(&text, tree, node, buffer);
 }
 
-char fill_buffer(const char **text, char *buffer)
+char fill_node(const char **text, char *buffer)
 {
     assert(text);
     assert(*text);
@@ -118,7 +118,7 @@ void parse_node(const char **text, my_tree *tree, tree_node *node, char *buffer)
     assert(node);
     assert(buffer);
 
-    if(fill_buffer(text, buffer))
+    if(fill_node(text, buffer))
     {
         tree_node *new_node = node_ctor(tree, buffer);
 
@@ -132,7 +132,7 @@ void parse_node(const char **text, my_tree *tree, tree_node *node, char *buffer)
         return;
     }
 
-    if(fill_buffer(text, buffer))
+    if(fill_node(text, buffer))
     {
         tree_node *new_node = node_ctor(tree, buffer);
 
