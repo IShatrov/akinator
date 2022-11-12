@@ -56,6 +56,8 @@ typedef struct
 //! @brief Initialises tree.
 tree_node* tree_ctor(my_tree *dest, ssize_t capacity, const tree_elmt root_val);
 
+void tree_realloc(my_tree *tree, ssize_t new_cap);
+
 //! @param[in] tree Pointer to tree.
 //! @param[in] val Value to add.
 //! @return Returns pointer to new node.

@@ -1,6 +1,7 @@
 #include "tree.h"
 
 #define GO_DEEPER(where) if(where) action(where)
+#define GR_VIZ_PRINT(...) fprintf(gr_viz, __VA_ARGS__)
 
 tree_node* tree_ctor(my_tree *dest, ssize_t capacity, const tree_elmt root_val)
 {
@@ -17,11 +18,23 @@ tree_node* tree_ctor(my_tree *dest, ssize_t capacity, const tree_elmt root_val)
     dest->data[ROOT].r_child = NULL;
 
     dest->data[ROOT].val = root_val;
-    //strncpy(dest->data[ROOT].val, root_val, MAX_STR_LEN);
 
     dest->root = &(dest->data[ROOT]);
 
     return dest->root;
+}
+
+void tree_realloc(my_tree *tree, ssize_t new_cap)
+{
+    assert(tree);
+    assert(new_cap > tree->capacity);
+
+    tree->data = (tree_node*)realloc(tree->data, new_cap*sizeof(tree_node));
+    assert(tree->data);
+
+    tree->capacity = new_cap;
+
+    return;
 }
 
 tree_node* node_ctor(my_tree *tree, const tree_elmt val)
@@ -29,11 +42,12 @@ tree_node* node_ctor(my_tree *tree, const tree_elmt val)
     assert(tree);
     assert(tree->data);
 
+    if(tree->size == tree->capacity) tree_realloc(tree, 2*(tree->capacity));
+
     tree->data[tree->size].l_child = NULL;
     tree->data[tree->size].r_child = NULL;
 
     tree->data[tree->size].val = val;
-    //strncpy(tree->data[tree->size].val, val, MAX_STR_LEN);
 
     (tree->size)++;
 
@@ -64,8 +78,8 @@ void tree_dump(my_tree *tree)
     FILE *gr_viz = fopen("graphviz_code.txt", "w");
     assert(gr_viz);
 
-    fprintf(gr_viz, "digraph dump\n{\n\t"
-                        "node[shape = \"record\", style = \"rounded\"];\n\n");
+    GR_VIZ_PRINT("digraph dump\n{\n\t"
+                    "node[shape = \"record\", style = \"rounded\"];\n\n");
 
     print_branch(tree->root, gr_viz);
 
@@ -86,7 +100,7 @@ void print_branch(tree_node *node, FILE *gr_viz)
 
     if(node->l_child)
     {
-        fprintf(gr_viz, "\t" "\"%p\"->\"%p\" [label = \"y\"] ;\n",
+        GR_VIZ_PRINT("\t" "\"%p\"->\"%p\" [label = \"y\"] ;\n",
             node, node->l_child);
 
         print_branch((tree_node*)node->l_child, gr_viz);
@@ -94,12 +108,12 @@ void print_branch(tree_node *node, FILE *gr_viz)
 
     if(node->r_child)
     {
-        fprintf(gr_viz, "\t" "\"%p\"->\"%p\" [label = \"n\"] ;\n", node, node->r_child);
+        GR_VIZ_PRINT("\t" "\"%p\"->\"%p\" [label = \"n\"] ;\n", node, node->r_child);
 
         print_branch((tree_node*)node->r_child, gr_viz);
     }
 
-    fprintf(gr_viz, "\t" "\"%p\"[label = \"{%p | val: %s | {l: %p | r: %p} | is new: %d}\"];\n\n",
+    GR_VIZ_PRINT("\t" "\"%p\"[label = \"{%p | val: %s | {l: %p | r: %p} | is new: %d}\"];\n\n",
         node, node, node->val, node->l_child, node->r_child, node->is_new);
 
     return;
@@ -154,3 +168,6 @@ void tree_visitor(tree_node *node, const char mode, void (*action)(tree_node *no
 
     return;
 }
+
+#undef GO_DEEPER
+#undef GR_VIZ_PRINT
