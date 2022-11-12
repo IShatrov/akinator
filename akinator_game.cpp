@@ -10,8 +10,9 @@ void start_game(const char *filename)
     assert(filename);
 
     my_tree tree;
+    char *text = NULL;
 
-    get_database(filename, &tree);
+    get_database(filename, &tree, &text);
 
     int should_speak = 0;
 
@@ -49,8 +50,10 @@ void start_game(const char *filename)
                 break;
             case GAME_SAVE_AND_EXIT:
                 save_database(&tree);
+                free(text);
                 return;
             case GAME_EXIT:
+                free(text);
                 return;
             default:
                 AKI_PRINT("Please try again\n\n");

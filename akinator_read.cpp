@@ -3,7 +3,7 @@
 #define SKIP_SPACES(text) while(isspace(*text)) text++
 #define SKIP_SPACES_AND_CLOSE_BRACKETS(text) while(isspace(*text) || (*text) == '}') text++
 
-void get_database(const char *filename, my_tree *tree)
+void get_database(const char *filename, my_tree *tree, char **text)
 {
     assert(filename);
     assert(tree);
@@ -11,11 +11,10 @@ void get_database(const char *filename, my_tree *tree)
     FILE *database = fopen(filename, "r");
     assert(database);
 
-    char *text = read_text(database);
+    *text = read_text(database);
 
-    parse_database(text, tree);
+    parse_database(*text, tree);
 
-    free(text);
     fclose(database);
 
     return;
@@ -52,29 +51,28 @@ char* read_text(FILE *stream)
     return text;
 }
 
-void parse_database(const char *text, my_tree *tree)
+void parse_database(char *text, my_tree *tree)
 {
     assert(text);
     assert(tree);
 
-    char buffer[MAX_STR_LEN + 1] = {0};
+    //char buffer[MAX_STR_LEN + 1] = {0};
 
-    fill_node(&text, buffer);
+    char *root_val = fill_node(&text);
 
-    tree_node *node = tree_ctor(tree, DEFAULT_TREE_CAP, buffer);
+    tree_node *node = tree_ctor(tree, DEFAULT_TREE_CAP, root_val);
 
-    parse_node(&text, tree, node, buffer);
+    parse_node(&text, tree, node);
 }
 
-char fill_node(const char **text, char *buffer)
+char* fill_node(char **text)
 {
     assert(text);
     assert(*text);
-    assert(buffer);
-
-    int buffer_len = 0;
 
     SKIP_SPACES((*text));
+
+    char *ptr = NULL;
 
     if(**text == '{')
     {
@@ -85,12 +83,14 @@ char fill_node(const char **text, char *buffer)
         {
             (*text)++;
 
-            while(**text != '"' && buffer_len <= MAX_STR_LEN)
+            ptr = *text;
+
+            while(**text != '"')
             {
-                buffer[buffer_len++] = *((*text)++);
+                (*text)++;
             }
 
-            buffer[buffer_len] = '\0';
+            **text = '\0';
 
             (*text)++;
             SKIP_SPACES((*text));
@@ -103,28 +103,29 @@ char fill_node(const char **text, char *buffer)
 
         SKIP_SPACES((*text));
 
-        return 0;
+        return NULL;
     }
     else printf("ERROR: invalid database\n");
 
-    return 1;
+    return ptr;
 }
 
-void parse_node(const char **text, my_tree *tree, tree_node *node, char *buffer)
+void parse_node(char **text, my_tree *tree, tree_node *node)
 {
     assert(text);
     assert(*text);
     assert(tree);
     assert(node);
-    assert(buffer);
 
-    if(fill_node(text, buffer))
+    char *ptr = NULL;
+
+    if((ptr = fill_node(text)))
     {
-        tree_node *new_node = node_ctor(tree, buffer);
+        tree_node *new_node = node_ctor(tree, ptr);
 
         node->l_child = new_node;
 
-        parse_node(text, tree, new_node, buffer);
+        parse_node(text, tree, new_node);
     }
     else
     {
@@ -132,13 +133,13 @@ void parse_node(const char **text, my_tree *tree, tree_node *node, char *buffer)
         return;
     }
 
-    if(fill_node(text, buffer))
+    if((ptr = fill_node(text)))
     {
-        tree_node *new_node = node_ctor(tree, buffer);
+        tree_node *new_node = node_ctor(tree, ptr);
 
         node->r_child = new_node;
 
-        parse_node(text, tree, new_node, buffer);
+        parse_node(text, tree, new_node);
     }
     else
     {

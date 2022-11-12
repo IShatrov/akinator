@@ -14,8 +14,8 @@ tree_node* tree_ctor(my_tree *dest, ssize_t capacity, const tree_elmt root_val)
     dest->data[ROOT].l_child = NULL;
     dest->data[ROOT].r_child = NULL;
 
-    //dest->data[ROOT].val = root_val;
-    strncpy(dest->data[ROOT].val, root_val, MAX_STR_LEN);
+    dest->data[ROOT].val = root_val;
+    //strncpy(dest->data[ROOT].val, root_val, MAX_STR_LEN);
 
     dest->root = &(dest->data[ROOT]);
 
@@ -30,8 +30,8 @@ tree_node* node_ctor(my_tree *tree, const tree_elmt val)
     tree->data[tree->size].l_child = NULL;
     tree->data[tree->size].r_child = NULL;
 
-    //tree->data[tree->size].val = val;
-    strncpy(tree->data[tree->size].val, val, MAX_STR_LEN);
+    tree->data[tree->size].val = val;
+    //strncpy(tree->data[tree->size].val, val, MAX_STR_LEN);
 
     (tree->size)++;
 
@@ -44,7 +44,7 @@ void tree_dtor(my_tree *tree)
 
     for(int nodes_killed = 0; nodes_killed < tree->size; nodes_killed++)
     {
-        //tree->data[nodes_killed].val = VAL_POISON;
+        tree->data[nodes_killed].val = NULL;
 
         tree->data[nodes_killed].l_child = NULL;
         tree->data[nodes_killed].r_child = NULL;

@@ -68,8 +68,9 @@ void aki_speak(int should_speak, const char *fmt, ...);
 
 //! @param[in] filename Database filename.
 //! @param[in] tree Tree to save database at.
+//! @param[in] text Pointer to char array to store database at.
 //! @brief Reads database.
-void get_database(const char *filename, my_tree *tree);
+void get_database(const char *filename, my_tree *tree, char **text);
 
 //! @param[in] stream File to examine.
 //! @return Returns amount of characters in stream.
@@ -84,19 +85,19 @@ char* read_text(FILE *stream);
 //! @param[in] text Text to parse.
 //! @param[in] tree Tree to save database at.
 //! @brief Parses database.
-void parse_database(const char *text, my_tree *tree);
+void parse_database(char *text, my_tree *tree);
 
 //! @param[in] text Text to read from.
 //! @param[in] buffer Buffer to save text to.
 //! @brief Reads values for nodes.
-char fill_node(const char **text, char *buffer);
+char* fill_node(char **text);
 
 //! @param[in] text Text.
 //! @param[in] tree Pointer to tree.
 //! @param[in] node Node to parse.
 //! @param[in] buffer Buffer containing value of node.
 //! @brief Parses node.
-void parse_node(const char **text, my_tree *tree, tree_node *node, char *buffer);
+void parse_node(char **text, my_tree *tree, tree_node *node);
 
 //akinator_write.cpp
 

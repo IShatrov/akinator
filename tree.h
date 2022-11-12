@@ -14,7 +14,7 @@ const char TREE_BYPASS = 1;
 
 enum poison
 {
-    //VAL_POISON = -1,
+    VAL_POISON = 0,
     CAP_POSION = -1,
     SIZE_POSION = -1,
 };
@@ -26,7 +26,7 @@ enum tree_visitor_modes
     POST_ORDER,
 };
 
-typedef char tree_elmt[MAX_STR_LEN + 1];
+typedef char *tree_elmt;
 
 typedef struct
 {
