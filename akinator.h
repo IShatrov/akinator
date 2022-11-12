@@ -3,6 +3,7 @@
 
 #include "tree.h"
 #include "simple_stack.h"
+#include <stdarg.h>
 
 #define SPEAK
 
@@ -28,8 +29,9 @@ const char GAME_IS_ON = 1;
 void start_game(const char *filename);
 
 //! @param[in] tree Pointer to tree.
+//! @param[in] should_speak 0 if should not speak, !0 if should.
 //! @brief Starts guess mode.
-void guess(my_tree *tree);
+void guess(my_tree *tree, int should_speak);
 
 //! @param[in] buffer Chars array.
 //! @brief Reads chars from stdin until \n is met and stores them in buffer.
@@ -37,8 +39,9 @@ void read(char *buffer);
 
 //! @param[in] tree Pointer to tree.
 //! @param[in] bad_node Node which will be updated.
+//! @param[in] should_speak 0 if should not speak, !0 if should.
 //! @brief Updates database.
-void update_database(my_tree *tree, tree_node *bad_node);
+void update_database(my_tree *tree, tree_node *bad_node, int should_speak);
 
 //! @param[in] node Node to start searching from.
 //! @param[in] target Target.
@@ -47,16 +50,19 @@ void update_database(my_tree *tree, tree_node *bad_node);
 char tree_find(tree_node *node, const char *target, my_stk *stk);
 
 //! @param[in] tree Pointer to tree.
+//! @param[in] should_speak 0 if should not speak, !0 if should.
 //! @brief Starts definition mode.
-void def(my_tree *tree);
+void def(my_tree *tree, int should_speak);
 
 //! @param[in] tree Pointer to tree.
+//! @param[in] should_speak 0 if should not speak, !0 if should.
 //! @brief Starts comparison mode.
-void comp(my_tree *tree);
+void comp(my_tree *tree, int should_speak);
 
-//! @param[in] text Text to say.
+//! @param[in] should_speak 0 if should not speak, !0 if should.
+//! @param[in] fmt Format.
 //! @brief Says text using espeak.
-void aki_speak(const char *text);
+void aki_speak(int should_speak, const char *fmt, ...);
 
 //akinator_read.cpp
 

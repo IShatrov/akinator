@@ -2,17 +2,8 @@
 
 #define CLEAR_BUFFER while(getchar() != '\n');
 
-#define AKI_PRINT(...)                               \
-{printf(__VA_ARGS__);                                \
-if(should_speak)                                     \
-{                                                    \
-    char print_buffer[PRINT_BUFFER_SIZE + 1] = {0};  \
-    sprintf(print_buffer, __VA_ARGS__);              \
-                                                     \
-    aki_speak(print_buffer);                         \
-}}                                                   \
+#define AKI_PRINT(...) aki_speak(should_speak, __VA_ARGS__)
 
-int should_speak = 0;
 
 void start_game(const char *filename)
 {
@@ -22,9 +13,11 @@ void start_game(const char *filename)
 
     get_database(filename, &tree);
 
+    int should_speak = 0;
+
     printf("Would you like to enable text-to-speech? y/n\n");
     should_speak = (getchar() == 'y') ? 1:0;
-    CLEAR_BUFFER
+    CLEAR_BUFFER;
 
     while(GAME_IS_ON)
     {
@@ -38,18 +31,18 @@ void start_game(const char *filename)
                 GAME_GUESS, GAME_DEF, GAME_COMP, GAME_SHOW, GAME_SAVE_AND_EXIT, GAME_EXIT);
 
         int input = getchar();
-        CLEAR_BUFFER
+        CLEAR_BUFFER;
 
         switch(input)
         {
             case GAME_GUESS:
-                guess(&tree);
+                guess(&tree, should_speak);
                 break;
             case GAME_DEF:
-                def(&tree);
+                def(&tree, should_speak);
                 break;
             case GAME_COMP:
-                comp(&tree);
+                comp(&tree, should_speak);
                 break;
             case GAME_SHOW:
                 tree_dump(&tree);
@@ -67,7 +60,7 @@ void start_game(const char *filename)
     return;
 }
 
-void guess(my_tree *tree)
+void guess(my_tree *tree, int should_speak)
 {
     assert(tree);
 
@@ -106,7 +99,7 @@ void guess(my_tree *tree)
             AKI_PRINT("I won again\n");
             return;
         case 'n':
-            update_database(tree, node);
+            update_database(tree, node, should_speak);
             break;
         default:
             AKI_PRINT("Please try again\n\n");
@@ -134,7 +127,7 @@ void read(char *buffer)
     return;
 }
 
-void update_database(my_tree *tree, tree_node *bad_node)
+void update_database(my_tree *tree, tree_node *bad_node, int should_speak)
 {
     assert(tree);
 
@@ -186,7 +179,7 @@ char tree_find(tree_node *node, const char *target, my_stk *stk)
     return 0;
 }
 
-void def(my_tree *tree)
+void def(my_tree *tree, int should_speak)
 {
     assert(tree);
 
@@ -228,7 +221,7 @@ void def(my_tree *tree)
     return;
 }
 
-void comp(my_tree *tree)
+void comp(my_tree *tree, int should_speak)
 {
     assert(tree);
 
@@ -333,25 +326,39 @@ void comp(my_tree *tree)
     return;
 }
 
-void aki_speak(const char *text)
+void aki_speak(int should_speak, const char *fmt, ...)
 {
-    assert(text);
+    assert(fmt);
+
+    va_list args;
+    va_start(args, fmt);
+
+    vprintf(fmt, args);
 
     #ifdef SPEAK
-    char command[PRINT_BUFFER_SIZE + 1] = "espeak.exe \"";
 
-    strncat(command, text, MAX_STR_LEN*10);
-    strncat(command, "\"", MAX_STR_LEN*10);
-
-    int chr = 0;            //replace \n with space so that espeak could pronounce everything
-    while(command[chr])
+    if(should_speak)
     {
-        if(command[chr] == '\n') command[chr] = ' ';
-        chr++;
-    }
+        char print_buffer[PRINT_BUFFER_SIZE + 1] = {0};
+        vsprintf(print_buffer, fmt, args);
 
-    system(command);
+        char command[PRINT_BUFFER_SIZE + 1] = "espeak.exe \"";
+
+        strncat(command, print_buffer, MAX_STR_LEN*10);
+        strncat(command, "\"", MAX_STR_LEN*10);
+
+        int chr = 0;            //replace \n with space so that espeak could pronounce everything
+        while(command[chr])
+        {
+            if(command[chr] == '\n') command[chr] = ' ';
+            chr++;
+        }
+
+        system(command);
+    }
     #endif
+
+    va_end(args);
 
     return;
 }
