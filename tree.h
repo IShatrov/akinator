@@ -34,6 +34,8 @@ typedef struct
 
     void *l_child;
     void *r_child;
+
+    char is_new;
 } tree_node;
 
 typedef struct
@@ -73,7 +75,19 @@ void tree_dump(my_tree *tree);
 //! @brief Prints graphviz code to file.
 void print_branch(tree_node *node, FILE *gr_viz);
 
-//void tree_visitor(tree_node *node, const char mode, );
+//! @param[in] tree Pointer to tree.
+//! @brief Frees tree nodes and fills them with poison.
+void tree_free(my_tree *tree);
+
+//! @param[in] node Pointer to node.
+//! @brief Frees tree node and fills it with poison.
+void node_free(tree_node *node);
+
+//! @param[in] node Node to start from.
+//! @param[in] mode Pre order, in order or post order.
+//! @param[in] action Action to perform.
+//! @brief visits tree.
+void tree_visitor(tree_node *node, const char mode, void (*action)(tree_node *node));
 
 #endif
 

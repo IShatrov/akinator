@@ -4,7 +4,6 @@
 
 #define AKI_PRINT(...) aki_speak(should_speak, __VA_ARGS__)
 
-
 void start_game(const char *filename)
 {
     assert(filename);
@@ -50,9 +49,11 @@ void start_game(const char *filename)
                 break;
             case GAME_SAVE_AND_EXIT:
                 save_database(&tree);
+                tree_dtor(&tree);
                 free(text);
                 return;
             case GAME_EXIT:
+                tree_dtor(&tree);
                 free(text);
                 return;
             default:
@@ -118,7 +119,7 @@ void read(char *buffer)
     char chr = getchar();
     int chars_got = 0;
 
-    while(chr != '\n')
+    while(chr != '\n' && chars_got < MAX_STR_LEN)
     {
         buffer[chars_got++] = chr;
 
@@ -136,23 +137,26 @@ void update_database(my_tree *tree, tree_node *bad_node, int should_speak)
 
     AKI_PRINT("Who was it then?\n");
 
-    char new_name[MAX_STR_LEN + 1] = {0};
+    char *new_name = (char*)calloc(MAX_STR_LEN + 1, sizeof(char));
     read(new_name);
 
     AKI_PRINT("How is %s different from %s?\n", new_name, bad_node -> val);
 
-    char new_question[MAX_STR_LEN + 1] = {0};
+    char *new_question = (char*)calloc(MAX_STR_LEN + 1, sizeof(char));
     read(new_question);
 
     AKI_PRINT("So %s %s. You will not win next time!\n", new_name, new_question);
 
     tree_node *new_node = node_ctor(tree, bad_node->val);
     bad_node->r_child = new_node;
+    new_node->is_new = bad_node->is_new;
 
     new_node = node_ctor(tree, new_name);
     bad_node->l_child = new_node;
+    new_node->is_new = 1;
 
-    strncpy(bad_node->val, new_question, MAX_STR_LEN);
+    bad_node->val = new_question;
+    bad_node->is_new = 1;
 
     return;
 }

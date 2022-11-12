@@ -1,5 +1,7 @@
 #include "tree.h"
 
+#define GO_DEEPER(where) if(where) action(where)
+
 tree_node* tree_ctor(my_tree *dest, ssize_t capacity, const tree_elmt root_val)
 {
     assert(dest);
@@ -42,13 +44,7 @@ void tree_dtor(my_tree *tree)
 {
     assert(tree);
 
-    for(int nodes_killed = 0; nodes_killed < tree->size; nodes_killed++)
-    {
-        tree->data[nodes_killed].val = NULL;
-
-        tree->data[nodes_killed].l_child = NULL;
-        tree->data[nodes_killed].r_child = NULL;
-    }
+    tree_free(tree);
 
     tree->root = NULL;
 
@@ -103,8 +99,58 @@ void print_branch(tree_node *node, FILE *gr_viz)
         print_branch((tree_node*)node->r_child, gr_viz);
     }
 
-    fprintf(gr_viz, "\t" "\"%p\"[label = \"{%p | val: %s | {l: %p | r: %p}}\"];\n\n",
-        node, node, node->val, node->l_child, node->r_child);
+    fprintf(gr_viz, "\t" "\"%p\"[label = \"{%p | val: %s | {l: %p | r: %p} | is new: %d}\"];\n\n",
+        node, node, node->val, node->l_child, node->r_child, node->is_new);
+
+    return;
+}
+
+void tree_free(my_tree *tree)
+{
+    assert(tree);
+
+    tree_visitor(tree->root, POST_ORDER, &node_free);
+
+    return;
+}
+
+void node_free(tree_node *node)
+{
+    assert(node);
+
+    if(node->is_new) free(node->val);
+    node->val = NULL;
+    node->l_child = NULL;
+    node->r_child = NULL;
+
+    return;
+}
+
+void tree_visitor(tree_node *node, const char mode, void (*action)(tree_node *node))
+{
+    assert(node);
+    assert(action);
+
+    switch(mode)
+    {
+        case PRE_ORDER:
+            action((tree_node*)node);
+            GO_DEEPER((tree_node*)node->l_child);
+            GO_DEEPER((tree_node*)node->r_child);
+            break;
+        case IN_ORDER:
+            GO_DEEPER((tree_node*)node->l_child);
+            action((tree_node*)node);
+            GO_DEEPER((tree_node*)node->r_child);
+            break;
+        case POST_ORDER:
+            GO_DEEPER((tree_node*)node->l_child);
+            GO_DEEPER((tree_node*)node->r_child);
+            action((tree_node*)node);
+            break;
+        default:
+            return;
+    }
 
     return;
 }

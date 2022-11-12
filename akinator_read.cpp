@@ -61,6 +61,7 @@ void parse_database(char *text, my_tree *tree)
     char *root_val = fill_node(&text);
 
     tree_node *node = tree_ctor(tree, DEFAULT_TREE_CAP, root_val);
+    node->is_new = 0;
 
     parse_node(&text, tree, node);
 }
@@ -122,6 +123,7 @@ void parse_node(char **text, my_tree *tree, tree_node *node)
     if((ptr = fill_node(text)))
     {
         tree_node *new_node = node_ctor(tree, ptr);
+        new_node->is_new = 0;
 
         node->l_child = new_node;
 
@@ -136,6 +138,7 @@ void parse_node(char **text, my_tree *tree, tree_node *node)
     if((ptr = fill_node(text)))
     {
         tree_node *new_node = node_ctor(tree, ptr);
+        new_node->is_new = 0;
 
         node->r_child = new_node;
 

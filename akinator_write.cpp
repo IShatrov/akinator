@@ -12,6 +12,8 @@ void save_database(my_tree *tree)
     save_node(tree->root, new_database);
 
     fclose(new_database);
+
+    return;
 }
 
 void save_node(tree_node *node, FILE *dest)
